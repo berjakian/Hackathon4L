@@ -1,0 +1,362 @@
+---
+title: "Hack4"
+author: "Berj Akian"
+date: "11/10/2020"
+output: html_document
+---
+## Task 1
+
+#Collect the answers to the questions from each member of the group and upload it as a dataframe in R Studio
+```{r}
+
+#1. Design three questions for this survey that have the following properties:
+
+#--- How many hours per week do you spend on HUDK4050? (Answer: 0-168)
+#--- How many swirl courses have you completed? (Answer: 0-16)
+#--- On a scale of 0-10 (10 being difficult), how difficult would you rate HUDK4050? (Answer: 0-10)
+
+#2. Each member of the group should answer the questions for HUDK4050
+
+#3. Collect the answers to the questions from each member of the group and upload it as a dataframe in R Studio
+
+HDF <- read.csv("hack4.csv")
+
+
+#4. Using the ggplot2 package (or if you like the ggplot2 +  GGAlly:: ggpairs()) draw three scatterplots that represent the data between the combinations of your three questions. 
+
+library(tidyverse)
+library(GGally)
+
+#--- import Hackathon Data Frame "HDF"...  and clean up rownames
+HDF <- read.csv("hack4.csv")
+HDF2 <- HDF
+rownames(HDF2) <- HDF$name
+HDF2 <- HDF2[,-1]
+
+#--- visualize the pairs
+pairs(HDF2)
+ggpairs(HDF2)
+
+```
+## Task 2
+
+```{r}
+
+#1. Choose one of your three plots that has a good amount of spread in the data points...
+#selected... "number_of_swirls" and "difficulty_level"
+
+
+#2. Create a separate data frame with the two variables you chose...remove column 1 
+HDF3 <- HDF2[,-1]
+
+
+#3. Zero center the data using the scale() function but set the scale option to False so it does not also change the variance to 1 (it just subtracts the mean from each value)
+HDF4 <- as.data.frame(scale(HDF3, scale = FALSE))
+
+
+#--- long column names are too complicated for PCA calcs... 
+#--- simplifying them as follows...
+#--- number_of_swirls = x 
+#--- difficulty_level = y
+colnames(HDF4) <- c("x","y")
+
+
+#4. Plot your zero-centered data using ggplot
+ggplot(HDF4, aes(x=x,y=y)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted")
+
+#--- plot of x and y intercepts... figured out how to get ggplot to keep the xy ratio fixed so a truer picture of the relative position of the coordinates can be visualized
+ggplot(HDF4, aes(x=x,y=y)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+#5. Examine your plot and try to estimate a trend line (y = mx + k) that represents the linear correlation of the two variables and runs through (0,0) - just use your eyes, don’t try to calculate it
+
+#--- looks like it's less than 1... maybe .5  
+
+#6. Plot your estimated line onto your data using the geom_abline()command
+
+ggplot(HDF4, aes(x=x,y=y)) + 
+  geom_point() + 
+  geom_abline() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+
+```
+
+```{r}
+
+#7.1 Now, project your data onto your trend line and calculate the values of the projected data points
+
+#        change in y
+#slope = -----------
+#        change in x
+
+#--- use estimated slope of 0.5
+HDF4$x.p1 <- (HDF4$x + 0.5 * HDF4$y)/(0.5^2 + 1)
+
+#--- using y=mx... calculate projected y
+HDF4$y.p1 <- 0.5 * HDF4$x.p1
+
+#--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
+#--- notice that the slope line bisects quadrant 1 and 3 evenly yet the slope is 0.5 (not 1.0), hmmm...  also notice that the x and y steps are not scaled to each other... pretty tricky of you ggplot!
+ggplot(HDF4, aes(x.p1,y.p1)) + 
+  geom_point() + 
+  geom_abline(slope = .5, intercept = 0) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+```
+
+
+```{r}
+#7.2 Now, project your data onto your trend line and calculate the values of the projected data points 
+
+#        change in y
+#slope = -----------
+#        change in x
+
+#--- use estimated slope of 1.5
+HDF4$x.p2 <- (HDF4$x + 1.5 * HDF4$y)/(1.5^2 + 1)
+
+#--- using y=mx... calculate projected y
+HDF4$y.p2 <- 1.5 * HDF4$x.p2
+
+#--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
+#--- notice that the slope line bisects quadrant 1 and 3 evenly yet the slope is 1.5 (not 1.0), hmmm...  also notice that the x and y steps are not scaled to each other... pretty tricky of you ggplot!
+ggplot(HDF4, aes(x.p2,y.p2)) + 
+  geom_point() + 
+  geom_abline(slope = 1.5, intercept = 0) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+```
+
+```{r}
+#REPEAT...
+#7.3 Now, project your data onto your trend line and calculate the values of the projected data points
+
+#        change in y
+#slope = -----------
+#        change in x
+
+#--- use estimated slope of 1.0
+HDF4$x.p3 <- (HDF4$x + 1.0 * HDF4$y)/(1.0^2 + 1)
+
+#--- using y=mx... calculate projected y
+HDF4$y.p3 <- 1.0 * HDF4$x.p3
+
+#--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
+#--- notice that the slope line bisects quadrant 1 and 3 evenly... as it should since the slope is 1
+ggplot(HDF4, aes(x.p3,y.p3)) + 
+  geom_point() + 
+  geom_abline(slope = 1.0, intercept = 0) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+```
+```{r}
+
+#8. Now, calculate the distance from your projected data points to the origin (0,0)
+#--- this should help.... a^2 + b^2 = c^2
+HDF4$distorigin1 <- sqrt(HDF4$x.p1^2 + HDF4$y.p1^2)
+HDF4$distorigin2 <- sqrt(HDF4$x.p2^2 + HDF4$y.p2^2)
+HDF4$distorigin3 <- sqrt(HDF4$x.p3^2 + HDF4$y.p3^2)
+
+#9. Square the distances so that all values are positive and then add them together... this is the Eigenvalue "the sum of the squared distances" 
+sumofsquares1 <- sum(HDF4$distorigin1)
+sumofsquares2 <- sum(HDF4$distorigin2)
+sumofsquares3 <- sum(HDF4$distorigin3)
+
+
+#--- Bring together the three Eigenvalues calculated and select the largest among them...  
+sumofsquares1
+sumofsquares2
+sumofsquares3
+
+#--- looks like the first one is the winner, where the slope is 0.5 
+PC1.slope <- 1/2
+
+```
+
+
+
+##Task 3 
+
+```{r}
+
+#1. Choose the trend line that has the larger Eigenvalue, we will call this line the First Principal Component or PC1
+#Create a new dataframe with just the projected x and y with the of the largest Eigenvalue
+HDF5 <- HDF4[1:5]
+
+
+#2. PC1 represents the linear combination of your two variables, which is a fancy way of saying that it describes the mixture of the two variables, according to the ratio of rise and run (y and x). In other words, the contribution of each variable is proportionate to its contribution to the trend line:
+
+#--- we chose a value of 0.5 as our First Principal Component or PC1 slope 
+
+
+#3. In Principal Component Analysis these ratios are written scaled so that they are proportionate to one unit along the principal component.  
+
+#--- at 18:24 in the workout video it shows that the eigenvector value formula as sqrt (change in y ^ 2 + change in x ^ 2)... should the "+" sign be a "/"?
+
+HDF5$PC1Ratio <- (HDF5$y.p1 - HDF5$y) / (HDF5$x.p1 - HDF5$x)
+
+#---Eigenvector calculation
+
+#---change in y
+changeiny.1 <- (HDF5$y.p1 - HDF5$y)
+
+#---change in x
+changeinx.1 <- (HDF5$x.p1 - HDF5$x)
+
+#---Eigenvector = sqrt (change in y ^ 2 / change in x ^ 2)
+Eigenvector.1 <- sqrt(changeiny.1^2 / changeinx.1^2)
+load.y.p1 <- 1/Eigenvector.1
+load.x.p1 <- 2/Eigenvector.1
+
+
+#4. The values you have just calculated (the ratio of your two variables) are called the Loading Scores for PC1, the one unit long line that is comprised of the loading scores is called the Eigenvector.
+
+#--- got it
+
+#5. Because we have two variables we can also calculate the Second Principal Component (PC2). PC2 is the line perpendicular to PC1 that passes through the origin. Calculate the projected values, Eigenvalue and Eigenvector (with Loading Scores) for PC2. Note PC1 and PC2 are not correlated because they are perpendicular.
+
+#--- i understand conceptually what needs to be done... calculate a set of projected x and projected y values to the line PC2 whose slope is the negative inverse of the slope of PC1... i don't yet fully understand these formulas that get us there... one day ;).
+
+  
+#--- use the negative inverse of PC1's slope of 1/2
+PC2.slope <- -2/1
+
+#--- use slope of PC2.slope
+HDF5$x.p2 <- (HDF5$x + PC2.slope * HDF5$y)/(PC2.slope ^ 2 + 1)
+
+#--- using y=mx... calculate projected y
+HDF5$y.p2 <- 1.0 * HDF5$x.p2
+
+#--- Calculate the ratio of your two variables according to PC2 on this scale.
+HDF5$PC2Ratio <- (HDF5$y.p2 - HDF5$y) / (HDF5$x.p2 - HDF5$x)
+
+#--- Eigenvector calculation
+
+#--- change in y
+changeiny.2 <- (HDF5$y.p2 - HDF5$y)
+
+#--- change in x
+changeinx.2 <- (HDF5$x.p2 - HDF5$x)
+
+#--- Eigenvector = sqrt (change in y ^ 2 / change in x ^ 2)
+Eigenvector.2 <- sqrt(changeiny.1^2 / changeinx.1^2)
+load.y.p2 <- -2/Eigenvector.2
+load.x.p2 <- 1/Eigenvector.2
+
+
+#--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
+ggplot(HDF5, aes(x,y)) + 
+  geom_point() + 
+  geom_abline(slope = PC1.slope, intercept = 0) +
+  geom_abline(slope = PC2.slope, intercept = 0) +
+    geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+#6. Now you have two Principal Components you can plot your data according to the Components. First, rotate the data so that PC2 is the y-axis and PC1 is the x-axis. You can do this using the projected values, it is the distance between the original and the projected values. Your plot should look like this (minus the original axes):
+
+#--- i conceptually understand the rotation... i don't yet fully understand these formulas that get us there... one day ;).
+
+
+HDF5$PC1 <- sqrt((HDF5$x - HDF5$x.p2)^2) + sqrt((HDF5$y - HDF5$y.p2)^2)
+HDF5$PC2 <- sqrt((HDF5$x - HDF5$x.p1)^2) + sqrt((HDF5$y - HDF5$y.p1)^2)
+
+HDF5$PC1 <- ifelse((HDF5$y < HDF5$y.p2), -1 * HDF5$PC1, HDF5$PC1)
+HDF5$PC2 <- ifelse((HDF5$x > HDF5$x.p2), -1 * HDF5$PC2, HDF5$PC2)
+
+ggplot(HDF5, aes(PC1, PC2)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") + 
+  scale_x_continuous(breaks = -10:10) + 
+  scale_y_continuous(breaks = -10:10) +
+  coord_fixed(ratio = 1)
+
+
+#7. For ease of interpretation you can convert the Eigenvalues into a Variation metric by dividing by the sample size minus 1. Calculate variation for PC1 and PC2. The total variation is equal to variation(PC1) + variation(PC2). Therefore the relative variation that each component accounts for is variation(PC)/total variation. Plot the relative variation of each PC as a bar chart.
+
+
+
+```
+
+# Task 4
+```{r}
+
+#1. At this stage you should have a values that looks like this, present your information in this format:
+
+
+
+
+#2. The loading scores for each question for each PC can be interpreted as the contribution of each question to the PC. Look at your loading scores and try to interpret what each PC might represent? Is one component mostly one question or are they an even mix?
+
+
+
+
+#3. The relative variation that each PC accounts for can be used to determine whether the second one could be discarded. Would you discard the second component or would keep it? Why? 
+
+
+
+
+#4. Of course the computer can do all these calculations for us :) The R code is very simple:
+#fit <- prcomp(data, center = TRUE, scale. = TRUE)
+#Notice the center and scale. options, a lot of words have been spilled on when and why you should use these options. It largely depends on what you are trying to accomplish though it is probably a good idea to always center. 
+
+
+#5. Run the PCA code on your three questions. 
+
+fit <- prcomp(HDF2, center = TRUE, scale. = TRUE)
+fit
+
+sd(HDF2[,1])
+sd(HDF2[,2])
+sd(HDF2[,3])
+
+#6. The resulting object will contain three sections: 
+#     sdev (the standard deviation of the eigenvalues to give you an idea of the relative importance of each PC in the same way our variation score did).  Are your components very different by this measure, could you drop any? 
+
+#--- it looks like the standard deviation of time spent is the greatest variable... and difficulty level is least... i suppose that third one could be dropped.
+#--- when i went back to the data... i couldn't understand the sdev values of the three columns... clearly column 2 data had greater range of values than columns 1 and three... a simple standard deviation command confirmed this... then i thought about this sdev value... sdev isn't the standard deviation of the actual values, rather it is the standard deviations of the principal components (i.e. points projected onto a principal axis) and the actual values. Here, the 'difficulty level' contributed least to the variability of the remaining columns. 
+
+
+#     rotation (the loading scores). Can you substantively interpret what each component means?
+
+#--- I understand that PCA takes a pair of vectors (i.e. two variable columns in a dataframe) and finds a straight line (PC1) that is closest to data points on a scree-plot graph of those vectors. That best fitting line (PC1) is calculated as follows: for each actual data point, identify the closest point on a line called PC1 that is closest to all data points. To calculate the closest line, side lengths of triangles are calculated. The corners of the triangle for each data point are: the point of origin, (0,0), the actual data point (x,y), and the projected point on PC1 (x.p, y.p). The angle "origin"-"projected point on PC1"-"actual data point" forms a right angle. Line a ("projected point on PC1"-"actual data point") is shortest where line b ("origin"-"projected point on PC1") is longest. This is proven using the a^2+b^2=c^2 where line a shrinks as line b grows to maintain a fixed line c length value. I've researched to try to find a crisp definition of loading scores... not surprising, there's some fuss about how terminology in this area (see https://stats.stackexchange.com/questions/125684/how-does-fundamental-theorem-of-factor-analysis-apply-to-pca-or-how-are-pca-l). I found this direct statement..."loading scores are equal to the coordinates of the variables divided by the square root of the eigenvalue associated with the component." Unfortunately, that statement doesn't help me "substantively interpret what each component means". One day ;). 
+
+# ---Separately, i understand Rotation has to do with pivoting the entire plot of the PC1 line and it's perpendicular sibling, the PC2 line, and all the actual data points, such that PC1 rests on the x-axis with a slope of zero.
+
+
+#     X (the original scores multiplied by the loadings to produce a composite value for each component for each individual). How did you score on each component? If your components have some meaning can you interpret each person’s score? 
+
+# ---not at this time... One day ;).
+
+
+```
+
+
