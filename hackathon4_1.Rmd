@@ -82,6 +82,8 @@ ggplot(HDF4, aes(x=x,y=y)) +
 
 #6. Plot your estimated line onto your data using the geom_abline()command
 
+#--- i found these helpful arguments to ggplot to scale the x and y axis
+
 ggplot(HDF4, aes(x=x,y=y)) + 
   geom_point() + 
   geom_abline() +
@@ -110,6 +112,15 @@ HDF4$y.p1 <- 0.5 * HDF4$x.p1
 
 #--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
 #--- notice that the slope line bisects quadrant 1 and 3 evenly yet the slope is 0.5 (not 1.0), hmmm...  also notice that the x and y steps are not scaled to each other... pretty tricky of you ggplot!
+
+ggplot(HDF4, aes(x.p1,y.p1)) + 
+  geom_point() + 
+  geom_abline(slope = .5, intercept = 0) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") 
+
+#--- i found these helpful arguments to ggplot to scale the x and y axis
+
 ggplot(HDF4, aes(x.p1,y.p1)) + 
   geom_point() + 
   geom_abline(slope = .5, intercept = 0) +
@@ -137,6 +148,16 @@ HDF4$y.p2 <- 1.5 * HDF4$x.p2
 
 #--- plot of the projected x and y values... just to see that they are all on the slope line used to determine them
 #--- notice that the slope line bisects quadrant 1 and 3 evenly yet the slope is 1.5 (not 1.0), hmmm...  also notice that the x and y steps are not scaled to each other... pretty tricky of you ggplot!
+
+ggplot(HDF4, aes(x.p2,y.p2)) + 
+  geom_point() + 
+  geom_abline(slope = 1.5, intercept = 0) +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  geom_vline(xintercept = 0, linetype = "dotted") 
+
+
+#--- i found these helpful arguments to ggplot to scale the x and y axis
+
 ggplot(HDF4, aes(x.p2,y.p2)) + 
   geom_point() + 
   geom_abline(slope = 1.5, intercept = 0) +
